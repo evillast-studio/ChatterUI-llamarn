@@ -106,19 +106,23 @@ jobs:
           echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
 
       # ── 4. ANDROID SDK / NDK ────────────────────────────────────────────────
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
+      # El runner ubuntu-latest ya trae el SDK preinstalado en ANDROID_SDK_ROOT
       - name: Install Android NDK and build tools
         run: |
+          # Aceptar licencias sin interacción
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+
           sdkmanager --install \
             "ndk;27.2.12479018" \
             "build-tools;35.0.0" \
             "platforms;android-35" \
             "cmake;3.22.1"
 
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT"                        >> $GITHUB_ENV
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> $GITHUB_ENV
           echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018"         >> $GITHUB_ENV
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin"            >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools"                      >> $GITHUB_PATH
 
       # ── 5. NODE / npm ───────────────────────────────────────────────────────
       - name: Setup Node.js
