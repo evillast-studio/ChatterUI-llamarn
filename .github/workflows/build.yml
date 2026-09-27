@@ -68,12 +68,19 @@ jobs:
 
       # ── 2. SWAP ─────────────────────────────────────────────────────────────
       # La compilación de llama.rn (C++/NDK) necesita mucha RAM
+      # El runner ya puede tener un swapfile activo, usamos dd como fallback
       - name: Configure swap (8 GB)
         run: |
-          sudo fallocate -l 8G /swapfile
+          # Desactivar y eliminar swap existente si lo hay
+          sudo swapoff -a || true
+          sudo rm -f /swapfile /mnt/swapfile || true
+
+          # Crear nuevo swapfile con dd (más compatible que fallocate en CI)
+          sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 status=none
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
           sudo swapon /swapfile
+
           # Prioridad baja: usa swap solo cuando la RAM real se agota
           sudo sysctl vm.swappiness=10
           echo "Swap activo:"
@@ -239,7 +246,7 @@ jobs:
       # ── 14. STATS DE CCACHE ─────────────────────────────────────────────────
       - name: ccache stats
         if: always()
-        run: ccache --show-stats
+        run: command -v ccache && ccache --show-stats || echo "ccache no disponible"
 
       # ── 15. SUBIR APK ───────────────────────────────────────────────────────
       - name: Upload APK artifact
