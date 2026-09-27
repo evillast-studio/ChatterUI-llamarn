@@ -253,7 +253,6 @@ jobs:
             --stacktrace \
             -x lint \
             -x test \
-            -x bundleReleaseJsAndAssets \
             -Pandroid.enableJetifier=false \
             -Pandroid.useAndroidX=true
 
